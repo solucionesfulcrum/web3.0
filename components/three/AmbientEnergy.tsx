@@ -125,7 +125,7 @@ export default function AmbientEnergy() {
   }, [geometry, dust, haze]);
   useFrame((_, delta) => {
     if (motion.current.reducedMotion) return;
-    const speed = motion.current.chapter === 2 ? 1.5 : 1;
+    const speed = motion.current.chapter === 3 ? 1.5 : 1;
     dust.uniforms.uTime.value += Math.min(delta, 0.05) * speed;
     haze.uniforms.uTime.value += Math.min(delta, 0.05);
   });

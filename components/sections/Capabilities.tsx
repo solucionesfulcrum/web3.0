@@ -1,3 +1,6 @@
+"use client";
+
+import { useLanguage } from "../i18n/LanguageProvider";
 import SectionIndex from "../ui/SectionIndex";
 
 const capabilities = [
@@ -8,20 +11,21 @@ const capabilities = [
 ];
 
 export default function Capabilities() {
+  const { t } = useLanguage();
   return <section id="capabilities" className="chapter capabilities" aria-labelledby="capabilities-title">
-    <SectionIndex number="02">CAPABILITIES</SectionIndex>
+    <SectionIndex number="02">{t("CAPABILITIES")}</SectionIndex>
     <div className="section-intro">
-      <h2 id="capabilities-title" data-reveal>INTELLIGENCE<br />BUILT INTO<br /><span className="muted-heading">EVERYTHING.</span></h2>
-      <p className="intro-note" data-reveal>Not an add-on.<br />An integral part of how<br />your business works.</p>
+      <h2 id="capabilities-title" data-reveal>{t("INTELLIGENCE")}<br />{t("BUILT INTO")}<br /><span className="muted-heading">{t("EVERYTHING.")}</span></h2>
+      <p className="intro-note" data-reveal>{t("Not an add-on.")}<br />{t("An integral part of how")}<br />{t("your business works.")}</p>
     </div>
     <div className="capability-list">
       {capabilities.map(([title, description, detail], index) => <a className="capability-row" key={title} href="#contact" data-reveal style={{ "--reveal-delay": `${index * 45}ms` } as React.CSSProperties}>
         <span className="row-index">0{index + 1}</span>
-        <h3>{title}</h3>
-        <span className="capability-description">{description}<span className="capability-detail">{detail}</span></span>
+        <h3>{t(title)}</h3>
+        <span className="capability-description">{t(description)}<span className="capability-detail">{t(detail)}</span></span>
         <span className="row-arrow" aria-hidden="true">↗</span>
       </a>)}
     </div>
-    <div className="section-footnote"><span>PURPOSE-BUILT SYSTEMS</span><span>ONE CONNECTED FOUNDATION.</span></div>
+    <div className="section-footnote"><span>{t("PURPOSE-BUILT SYSTEMS")}</span><span>{t("ONE CONNECTED FOUNDATION.")}</span></div>
   </section>;
 }

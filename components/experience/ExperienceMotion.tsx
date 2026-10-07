@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useRef, useState, type MutableRefObject, type ReactNode } from "react";
 
-export const CHAPTERS = ["core", "capabilities", "agents", "engineering", "contact"] as const;
+export const CHAPTERS = ["core", "capabilities", "business", "agents", "engineering", "team", "contact"] as const;
 export type MotionState = {
   heroProgress: number;
   chapter: number;
@@ -50,7 +50,7 @@ export default function ExperienceMotionProvider({ children }: { children: React
         if (y + innerHeight * 0.4 >= offsets[i]) { chapter = i; break; }
       }
       motion.current.chapter = chapter;
-      motion.current.engineeringProgress = clamp((y - offsets[3] + innerHeight * 0.3) / Math.max(1, (offsets[4] - offsets[3]) * 0.75));
+      motion.current.engineeringProgress = clamp((y - offsets[4] + innerHeight * 0.3) / Math.max(1, (offsets[5] - offsets[4]) * 0.75));
       document.documentElement.dataset.chapter = String(chapter);
       document.documentElement.style.setProperty("--journey-progress", String(clamp(y / Math.max(1, document.documentElement.scrollHeight - innerHeight))));
       document.documentElement.style.setProperty("--engineering-progress", String(motion.current.engineeringProgress));

@@ -1,5 +1,6 @@
 ﻿import type { Metadata } from "next";
 import "./globals.css";
+import LanguageProvider from "@/components/i18n/LanguageProvider";
 
 export const metadata: Metadata = {
   title: "FULCRUM — Intelligence Engineered Into Software",
@@ -7,5 +8,5 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  return <html lang="en"><body>{children}</body></html>;
+  return <html lang="es"><body><LanguageProvider>{children}</LanguageProvider></body></html>;
 }

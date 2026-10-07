@@ -4,6 +4,12 @@ import dynamic from "next/dynamic";
 import { Component, type ReactNode } from "react";
 import ExperienceMotionProvider from "./ExperienceMotion";
 import Navigation from "../layout/Navigation";
+import { useLanguage } from "../i18n/LanguageProvider";
+
+function WorldFallback() {
+  const { t } = useLanguage();
+  return <p className="webgl-fallback">{t("The interactive scene needs WebGL. You can still explore our work below.")}</p>;
+}
 
 const FulcrumWorld = dynamic(() => import("../three/FulcrumWorld"), { ssr: false });
 
@@ -11,7 +17,7 @@ class WorldBoundary extends Component<{ children: ReactNode }, { failed: boolean
   state = { failed: false };
   static getDerivedStateFromError() { return { failed: true }; }
   render() {
-    return this.state.failed ? <p className="webgl-fallback">The interactive scene needs WebGL. You can still explore our work below.</p> : this.props.children;
+    return this.state.failed ? <WorldFallback /> : this.props.children;
   }
 }
 

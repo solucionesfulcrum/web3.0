@@ -25,7 +25,7 @@ export default function AgentActivity() {
   useEffect(() => { geometry.setDrawRange(0, compact ? 70 : 180); }, [geometry, compact]);
   useFrame((_, delta) => {
     if (!group.current || !material.current) return;
-    const active = motion.current.chapter === 2;
+    const active = motion.current.chapter === 3;
     material.current.opacity = THREE.MathUtils.damp(material.current.opacity, active ? 0.65 : 0, 3, Math.min(delta, 0.05));
     if (!motion.current.reducedMotion) group.current.rotation.z += delta * (active ? 0.045 : 0.012);
   });
