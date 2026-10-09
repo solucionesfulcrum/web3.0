@@ -2,7 +2,7 @@
 
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Environment, Lightformer } from "@react-three/drei";
-import { Bloom, EffectComposer, Vignette } from "@react-three/postprocessing";
+import { Bloom, EffectComposer } from "@react-three/postprocessing";
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import AmbientEnergy from "./AmbientEnergy";
@@ -17,7 +17,6 @@ const TERMINALS: { position: [number, number, number]; length: number }[] = [
   { position: [1.6, -0.68, 0], length: 1.1 },
 ];
 const TERMINAL_RADIUS = 0.18;
-
 function seededRandom(seed: number) {
   return () => {
     seed = (seed * 16807) % 2147483647;
@@ -28,8 +27,8 @@ function seededRandom(seed: number) {
 function PlasmaMaterial({ ring = false }: { ring?: boolean }) {
   const material = useMemo(() => {
     const result = new THREE.MeshPhysicalMaterial({
-      color: "#ffffff", emissive: "#ffffff", emissiveIntensity: 0.32,
-      metalness: 0.38, roughness: 0.42, clearcoat: 0.4, clearcoatRoughness: 0.3,
+      color: "#ffffff", emissive: "#ffffff", emissiveIntensity: 0.10,
+      metalness: 0.38, roughness: 0.58, clearcoat: 0.2, clearcoatRoughness: 0.3,
     });
     result.onBeforeCompile = shader => {
       shader.vertexShader = "varying vec3 vPlasmaPosition;\n" + shader.vertexShader;
@@ -90,9 +89,9 @@ function CoreLight({ center }: { center: THREE.Vector3 }) {
   return <group position={center}>
     <mesh position={[0, 0, -0.16]}>
       <sphereGeometry args={[0.022, 16, 16]} />
-      <meshBasicMaterial color={[6, 1.8, 0.35]} toneMapped={false} />
+      <meshBasicMaterial color={[1.8, 0.55, 0.12]} toneMapped={false} />
     </mesh>
-    <pointLight position={[0, 0, 0.4]} color="#ff5010" intensity={0.65} distance={1.5} />
+    <pointLight position={[0, 0, 0.4]} color="#ff5010" intensity={0.25} distance={1.5} />
   </group>;
 }
 
@@ -119,15 +118,52 @@ function SmoothRing({ center }: { center: THREE.Vector3 }) {
   </group>;
 }
 
-function Terminal({ position, length }: { position: [number, number, number]; length: number }) {
-  return <group position={position}>
-    <mesh rotation={[0, 0, Math.PI / 2]}>
+function HeroTerminals() {
+  const { motion, compact } = useExperienceMotion();
+  const group = useRef<THREE.Group>(null);
+  const grainMaterial = useRef<THREE.PointsMaterial>(null);
+  const material = useMemo(() => new THREE.MeshPhysicalMaterial({
+    color: "#bdc2c7", metalness: 0.08, roughness: 0.23,
+    transmission: 0.68, thickness: 0.32, ior: 1.28,
+    transparent: true, opacity: 0.68, depthWrite: false,
+    envMapIntensity: 0.65, clearcoat: 0.3, clearcoatRoughness: 0.25,
+  }), []);
+  const grains = useMemo(() => {
+    const random = seededRandom(214);
+    const positions: number[] = [];
+    const colors: number[] = [];
+    for (const { position: [x, y, z], length } of TERMINALS) {
+      for (let i = 0; i < (compact ? 500 : 1800); i++) {
+        const angle = random() * Math.PI * 2;
+        const along = (random() - 0.5) * (length + TERMINAL_RADIUS * 2);
+        const cap = Math.max(0, Math.abs(along) - length / 2);
+        const radius = Math.sqrt(TERMINAL_RADIUS ** 2 - cap ** 2) + 0.002;
+        positions.push(x + along, y + Math.cos(angle) * radius, z + Math.sin(angle) * radius);
+        const intensity = 0.15 + random() * 0.65;
+        colors.push(intensity, intensity, intensity);
+      }
+    }
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
+    geometry.setAttribute("color", new THREE.Float32BufferAttribute(colors, 3));
+    return geometry;
+  }, [compact]);
+  useEffect(() => () => material.dispose(), [material]);
+  useEffect(() => () => grains.dispose(), [grains]);
+  useFrame(() => {
+    const visibility = 1 - THREE.MathUtils.smoothstep(motion.current.heroProgress, 0.45, 0.9);
+    if (group.current) group.current.visible = visibility > 0;
+    material.opacity = 0.68 * visibility;
+    if (grainMaterial.current) grainMaterial.current.opacity = 0.85 * visibility;
+  });
+  return <group ref={group}>
+    {TERMINALS.map(({ position, length }) => <mesh key={position[1]} position={position} rotation={[0, 0, Math.PI / 2]} material={material}>
       <capsuleGeometry args={[TERMINAL_RADIUS, length, 16, 48]} />
-      <meshPhysicalMaterial color="#bdc2c7" metalness={0.08} roughness={0.23}
-        transmission={0.68} thickness={0.32} ior={1.28}
-        transparent opacity={0.68} depthWrite={false}
-        envMapIntensity={0.65} clearcoat={0.3} clearcoatRoughness={0.25} />
-    </mesh>
+    </mesh>)}
+    <points geometry={grains}>
+      <pointsMaterial ref={grainMaterial} vertexColors size={0.008} transparent opacity={0.85}
+        depthWrite={false} toneMapped={false} blending={THREE.AdditiveBlending} />
+    </points>
   </group>;
 }
 
@@ -138,10 +174,10 @@ function SurfaceGrains({ surface }: { surface: THREE.BufferGeometry }) {
     const random = seededRandom(913);
     const positions: number[] = [];
     const colors: number[] = [];
-    const add = (x: number, y: number, z: number, silver = false) => {
+    const add = (x: number, y: number, z: number) => {
       positions.push(x, y, z);
-      const intensity = silver ? 0.15 + random() * 0.65 : 0.18 + Math.pow(random(), 4) * 1.2;
-      colors.push(intensity, intensity * (silver ? 1 : 0.25), intensity * (silver ? 1 : 0.015));
+      const intensity = 0.08 + Math.pow(random(), 4) * 0.5;
+      colors.push(intensity, intensity * 0.25, intensity * 0.015);
     };
     const vertices = surface.getAttribute("position");
     const normals = surface.getAttribute("normal");
@@ -185,15 +221,6 @@ function SurfaceGrains({ surface }: { surface: THREE.BufferGeometry }) {
         add(center.x + Math.cos(angle) * radius, center.y + Math.sin(angle) * radius, 0.225);
       }
     }
-    for (const { position: [x, y, z], length } of TERMINALS) {
-      for (let i = 0; i < (compact ? 500 : 1800); i++) {
-        const angle = random() * Math.PI * 2;
-        const along = (random() - 0.5) * (length + TERMINAL_RADIUS * 2);
-        const cap = Math.max(0, Math.abs(along) - length / 2);
-        const radius = Math.sqrt(TERMINAL_RADIUS ** 2 - cap ** 2) + 0.002;
-        add(x + along, y + Math.cos(angle) * radius, z + Math.sin(angle) * radius, true);
-      }
-    }
     const result = new THREE.BufferGeometry();
     result.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
     result.setAttribute("color", new THREE.Float32BufferAttribute(colors, 3));
@@ -201,7 +228,7 @@ function SurfaceGrains({ surface }: { surface: THREE.BufferGeometry }) {
   }, [surface, compact]);
   useEffect(() => () => geometry.dispose(), [geometry]);
   return <points geometry={geometry}>
-    <pointsMaterial vertexColors size={0.008} transparent opacity={0.85}
+    <pointsMaterial vertexColors size={0.008} transparent opacity={0.5}
       depthWrite={false} toneMapped={false} blending={THREE.AdditiveBlending} />
   </points>;
 }
@@ -286,7 +313,7 @@ function TravelingTrails() {
         positions.push(center.x, center.y, -0.10);
         seeds.push(random(), random(), random(), random());
         const color = new THREE.Color(i % 11 === 0 ? "#ffc477" : i % 3 === 0 ? "#e74708" : "#ff7b16");
-        color.multiplyScalar(1.2 + random() * 2.5);
+        color.multiplyScalar(0.5 + random() * 0.9);
         colors.push(color.r, color.g, color.b);
       }
     }
@@ -295,10 +322,11 @@ function TravelingTrails() {
     geometry.setAttribute("aSeed", new THREE.Float32BufferAttribute(seeds, 4));
     geometry.setAttribute("color", new THREE.Float32BufferAttribute(colors, 3));
     const material = new THREE.ShaderMaterial({
-      uniforms: { uTime: { value: 0 }, uScale: { value: 800 } },
+      uniforms: { uTime: { value: 0 }, uVisibility: { value: 1 }, uScale: { value: 800 } },
       vertexShader: `
         attribute vec4 aSeed;
         uniform float uTime;
+        uniform float uVisibility;
         uniform float uScale;
         varying vec3 vColor;
         varying float vOpacity;
@@ -319,7 +347,7 @@ function TravelingTrails() {
           float luminance = dot(color, vec3(0.2126, 0.7152, 0.0722));
           float colorLoss = smoothstep(0.04, 0.72, age);
           vColor = mix(color, vec3(luminance * 0.5), colorLoss) * mix(1.0, 0.25, age);
-          vOpacity = smoothstep(0.0, 0.012, age) * pow(1.0 - age, 2.0) * 0.9;
+          vOpacity = smoothstep(0.0, 0.012, age) * pow(1.0 - age, 2.0) * 0.5 * uVisibility;
         }
       `,
       fragmentShader: SOFT_PARTICLE_FRAGMENT,
@@ -330,7 +358,11 @@ function TravelingTrails() {
   }, [compact]);
   useEffect(() => { material.uniforms.uScale.value = size.height * viewport.dpr; }, [material, size.height, viewport.dpr]);
   useEffect(() => () => { geometry.dispose(); material.dispose(); }, [geometry, material]);
-  useFrame((_, delta) => { if (!motion.current.reducedMotion) material.uniforms.uTime.value += Math.min(delta, 0.05); });
+  useFrame((_, delta) => {
+    if (!motion.current.reducedMotion) material.uniforms.uTime.value += Math.min(delta, 0.05);
+    // Fade the wake before docking so no particles spill outside the circle.
+    material.uniforms.uVisibility.value = 1 - THREE.MathUtils.smoothstep(motion.current.heroProgress, 0.45, 0.9);
+  });
   return <points geometry={geometry} material={material} frustumCulled={false} />;
 }
 function FulcrumNode() {
@@ -349,7 +381,7 @@ function FulcrumNode() {
     <SmoothRing center={LOWER} />
     <CoreLight center={UPPER} />
     <CoreLight center={LOWER} />
-    {TERMINALS.map(terminal => <Terminal key={terminal.position[1]} {...terminal} />)}
+    <HeroTerminals />
     <SurfaceGrains surface={surface} />
     <TravelingTrails />
   </group>;
@@ -369,27 +401,33 @@ function Framing() {
   return null;
 }
 
-export default function FulcrumWorld() {
+export function WorldBackdrop() {
   const { compact } = useExperienceMotion();
-  return <Canvas camera={{ position: [0, 0, 9], fov: 34 }} dpr={compact ? 1 : [1, 1.5]}
-    gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping }}>
+  return <Canvas camera={{ position: [0, 0, 9], fov: 34 }} dpr={compact ? 1 : [1, 1.5]}>
     <color attach="background" args={["#020304"]} />
     <Framing />
     <StarField />
     <AmbientEnergy />
-    <ambientLight intensity={0.25} />
-    <directionalLight position={[-3, 5, 5]} intensity={3} color="#fff0df" />
-    <directionalLight position={[4, 1, 3]} intensity={2} color="#ffffff" />
-    <ScrollController><FulcrumNode /></ScrollController>
     <AgentActivity />
+  </Canvas>;
+}
+
+export default function FulcrumWorld() {
+  const { compact } = useExperienceMotion();
+  return <Canvas camera={{ position: [0, 0, 9], fov: 34 }} dpr={compact ? 1 : [1, 1.5]}
+    gl={{ alpha: true, antialias: true, toneMapping: THREE.ACESFilmicToneMapping }}>
+    <Framing />
+    <ambientLight intensity={0.25} />
+    <directionalLight position={[-3, 5, 5]} intensity={1.8} color="#fff0df" />
+    <directionalLight position={[4, 1, 3]} intensity={1.2} color="#ffffff" />
+    <ScrollController><FulcrumNode /></ScrollController>
     <Environment resolution={128}>
       <Lightformer position={[0, 4, 3]} intensity={2.5} scale={[8, 2, 1]} />
       <Lightformer position={[3, 0, 4]} intensity={1.5} color="#ffffff" scale={[2, 6, 1]} />
       <Lightformer position={[-4, 1, 2]} intensity={1} color="#ffffff" scale={[2, 4, 1]} />
     </Environment>
     <EffectComposer multisampling={0}>
-      <Bloom intensity={0.85} luminanceThreshold={0.85} luminanceSmoothing={0.3} mipmapBlur />
-      <Vignette eskil={false} offset={0.15} darkness={0.6} />
+      <Bloom intensity={0.25} luminanceThreshold={1.1} luminanceSmoothing={0.3} mipmapBlur />
     </EffectComposer>
   </Canvas>;
 }

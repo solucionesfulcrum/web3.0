@@ -296,3 +296,41 @@ html[data-enhanced] [data-reveal][data-visible] { opacity: 1; transform: transla
   .business-pagination button { width: 9px; height: 9px; padding: 0; border: 0; border-radius: 50%; background: #78848c; }
   .business-pagination button[aria-current="true"] { background: var(--orange); }
 }
+
+/* The same 3D core travels above the page into the advisor launcher. */
+.advisor-world { z-index: 31; }
+.advisor-world > div { pointer-events: none !important; }
+.advisor-launcher { position: fixed; z-index: 30; right: 24px; bottom: 24px; width: 88px; height: 88px; border-radius: 50%; border: 1px solid #ff4a1666; background: #090d12f5; box-shadow: 0 8px 35px #0009,0 0 25px #ff4a161a; opacity: 0; visibility: hidden; pointer-events: none; transition: opacity .25s,visibility .25s,box-shadow .25s; }
+.advisor-launcher[data-visible="true"] { opacity: 1; visibility: visible; pointer-events: auto; }
+.advisor-launcher:hover { box-shadow: 0 8px 35px #0009,0 0 30px #ff4a1640; border-color: var(--orange); }
+.advisor-launcher::before { content: ""; position: absolute; inset: -1px; border: 2px solid var(--orange); border-radius: inherit; background: radial-gradient(circle,transparent 45%,#ff4a1633 100%); box-shadow: 0 0 22px #ff4a1699,inset 0 0 14px #ff4a1655; opacity: 0; pointer-events: none; }
+.advisor-launcher[data-visible="true"]::before { animation: advisor-beacon 1.8s ease-in-out infinite; }
+@keyframes advisor-beacon { 0%,100% { opacity: 0; } 45%,55% { opacity: 1; } }
+@media(prefers-reduced-motion:reduce) { .advisor-launcher[data-visible="true"]::before { opacity: .35; } }
+.advisor-launcher-label { position: absolute; right: 99px; top: 29px; white-space: nowrap; padding: 9px 12px; border: 1px solid var(--line); background: #090d12; border-radius: 6px; font: 10px var(--mono); }
+.advisor-launcher-dot { position: absolute; right: 6px; bottom: 7px; width: 12px; height: 12px; border: 3px solid #090d12; border-radius: 50%; background: var(--orange); }
+.advisor-panel { position: fixed; z-index: 32; right: 24px; bottom: 128px; width: min(380px,calc(100vw - 48px)); max-height: calc(100dvh - 152px); display: flex; flex-direction: column; overflow: hidden; border: 1px solid #394047; border-radius: 16px; background: #0b1016; box-shadow: 0 22px 90px #000b; }
+.advisor-header { display: flex; align-items: center; gap: 12px; padding: 19px 16px; border-bottom: 1px solid var(--line); background: linear-gradient(120deg,#ff4a1614,transparent); }
+.advisor-avatar { display: grid; place-content: center; position: relative; flex: 0 0 40px; height: 40px; border: 1px solid #ff4a164d; border-radius: 12px; background: #ff4a1612; font-size: 29px; font-weight: 800; }
+.advisor-avatar span { position: absolute; color: var(--orange); right: 6px; bottom: 2px; }
+.advisor-header h2 { font: 600 16px Arial,Helvetica,sans-serif; letter-spacing: -.02em; }
+.advisor-header p { margin-top: 6px; color: var(--secondary); font: 7px/1.5 var(--mono); letter-spacing: .05em; }
+.advisor-header button { margin-left: auto; flex: 0 0 36px; height: 36px; border: 0; border-radius: 8px; background: #ffffff08; font-size: 24px; color: #b8c0c8; }
+.advisor-preview { padding: 10px 16px; color: #b5a39b; background: #ff4a1608; font: 8px/1.5 var(--mono); letter-spacing: .04em; }
+.advisor-messages { padding: 22px 18px; min-height: 0; overflow-y: auto; overscroll-behavior: contain; flex: 1; max-height: 330px; scrollbar-width: thin; }
+.advisor-message { max-width: 94%; padding: 14px; margin-bottom: 14px; background: #17212b; border: 1px solid #ffffff09; border-radius: 2px 12px 12px; }
+.advisor-message > span { display: block; margin-bottom: 8px; color: var(--orange); font: 8px var(--mono); letter-spacing: .09em; }
+.advisor-message p { color: #dbe1e6; font-size: 13px; line-height: 1.65; overflow-wrap: anywhere; }
+.advisor-message[data-role="user"] { margin-left: auto; background: #ff4a1617; border-color: #ff4a1633; border-radius: 12px 2px 12px 12px; }
+.advisor-choices { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0; }
+.advisor-choices button { display: flex; align-items: center; gap: 14px; min-height: 36px; padding: 9px 11px; border: 1px solid #ff4a1655; border-radius: 6px; background: transparent; font-size: 11px; }
+.advisor-choices button:hover { background: #ff4a161a; }
+.advisor-choices button span { color: var(--orange); }
+.advisor-contact { display: flex; justify-content: space-between; padding: 12px 18px; border-top: 1px solid var(--line); color: #ff825f; font-size: 11px; }
+.advisor-compose { display: flex; gap: 10px; margin: 4px 14px 0; padding: 8px; border: 1px solid #37414a; border-radius: 9px; background: #05090d; }
+.advisor-compose input { width: 100%; min-width: 0; padding: 6px; border: 0; background: transparent; color: var(--text); font-size: 13px; }
+.advisor-compose button { flex: 0 0 36px; height: 36px; border: 0; border-radius: 6px; background: var(--orange); color: #090d12; font-size: 22px; }
+.advisor-compose button:disabled { opacity: .35; cursor: default; }
+.advisor-footnote { padding: 11px 14px; color: var(--secondary); text-align: center; font-size: 9px; }
+@media(max-width:767px) { .chapter-navigation { bottom: 135px; } .advisor-launcher-label { display: none; } }
+@media(max-height:550px) { .advisor-panel { bottom: 24px; right: 128px; max-height: calc(100dvh - 48px); width: min(380px,calc(100vw - 152px)); } }
