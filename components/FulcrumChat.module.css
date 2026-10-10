@@ -1,0 +1,44 @@
+.launcher { display: grid; place-items: center; }
+.launcherIcon { color: var(--orange); transition: opacity .3s; }
+.launcherIcon[data-docked="true"] { opacity: 0; }
+.badge { margin-left: 8px; color: var(--orange); }
+.panel {
+  height: 560px;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(14px) scale(.97);
+  transform-origin: bottom right;
+  transition: opacity .22s ease, transform .22s ease, visibility .22s;
+}
+.panel[data-open="true"] { opacity: 1; visibility: visible; pointer-events: auto; transform: none; }
+.panel header { flex-shrink: 0; gap: 10px; }
+.panel header h2 { font-size: 14px; line-height: 1.4; }
+.panel header button { min-width: 36px; }
+.panel .status { display: flex; align-items: center; gap: 6px; font-size: 10px; letter-spacing: 0; }
+.status i { width: 5px; height: 5px; border-radius: 50%; background: var(--orange); box-shadow: 0 0 8px #ff4a1660; }
+.messages { max-height: none; scrollbar-color: #394047 transparent; }
+.messages p { white-space: pre-wrap; }
+.messages:focus-visible { outline: 1px solid var(--orange); outline-offset: -3px; }
+.typing { display: flex; align-items: center; gap: 10px; color: var(--secondary); font: 11px var(--mono); padding: 6px 0; }
+.typing span { color: var(--orange); font-size: 8px; animation: pulse 1.2s ease-in-out infinite; }
+.compose { flex-shrink: 0; align-items: flex-end; }
+.compose:focus-within { border-color: var(--orange); }
+.compose textarea { width: 100%; min-width: 0; resize: none; border: 0; background: transparent; color: var(--text); padding: 6px; font-size: 16px; line-height: 1.45; }
+.compose textarea:focus-visible { outline: none; }
+.compose textarea::placeholder { color: var(--secondary); }
+.compose button { min-width: 44px; min-height: 44px; transition: opacity .2s, background .2s; }
+.compose button:hover:not(:disabled) { background: #ff6a3a; }
+@keyframes pulse { 50% { opacity: .35; } }
+@media (max-width: 767px) {
+  .panel { right: 12px; width: calc(100vw - 24px); bottom: calc(128px + env(safe-area-inset-bottom, 0px)); max-height: calc(100dvh - 144px - env(safe-area-inset-bottom, 0px)); }
+}
+@media (max-height: 550px) {
+  .panel { right: 12px; bottom: 12px; width: min(380px, calc(100vw - 24px)); height: calc(100dvh - 24px); max-height: calc(100dvh - 24px); }
+  .panel header { padding-block: 10px; }
+  .messages { padding-block: 12px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .panel, .launcherIcon { transition: none; }
+  .typing span { animation: none; }
+}

@@ -1,13 +1,28 @@
 {
-  "name":"fulcrum-3d-world-v4","private":true,"version":"0.4.0",
-  "scripts":{"dev":"next dev","build":"next build","start":"next start"},
-  "dependencies":{
-    "@react-three/drei":"^9.114.3",
-    "@react-three/fiber":"^8.17.10",
-    "@react-three/postprocessing":"^2.16.3",
-    "next":"^14.2.13",
-    "postprocessing":"^6.36.3",
-    "react":"^18.3.1","react-dom":"^18.3.1","three":"^0.168.0"
+  "name": "fulcrum-3d-world-v4",
+  "private": true,
+  "version": "0.4.0",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
   },
-  "devDependencies":{"@types/node":"^22.7.4","@types/react":"^18.3.10","@types/react-dom":"^18.3.0","@types/three":"^0.168.0","typescript":"^5.6.2"}
+  "dependencies": {
+    "@react-three/drei": "^9.114.3",
+    "@react-three/fiber": "^8.17.10",
+    "@react-three/postprocessing": "^2.16.3",
+    "next": "^14.2.13",
+    "openai": "^6.49.0",
+    "postprocessing": "^6.36.3",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "three": "^0.168.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.7.4",
+    "@types/react": "^18.3.10",
+    "@types/react-dom": "^18.3.0",
+    "@types/three": "^0.168.0",
+    "typescript": "^5.6.2"
+  }
 }

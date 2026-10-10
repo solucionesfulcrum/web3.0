@@ -4,7 +4,6 @@ import dynamic from "next/dynamic";
 import { Component, type ReactNode } from "react";
 import ExperienceMotionProvider from "./ExperienceMotion";
 import Navigation from "../layout/Navigation";
-import SalesAdvisor from "./SalesAdvisor";
 import { useLanguage } from "../i18n/LanguageProvider";
 
 function WorldFallback() {
@@ -30,6 +29,5 @@ export default function Experience({ children }: { children: ReactNode }) {
     <div className="reading-shade" aria-hidden="true" />
     <Navigation />
     <main id="main">{children}</main>
-    <SalesAdvisor />
   </ExperienceMotionProvider>;
 }
