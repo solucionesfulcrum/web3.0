@@ -29,6 +29,8 @@
 .compose textarea::placeholder { color: var(--secondary); }
 .compose button { min-width: 44px; min-height: 44px; transition: opacity .2s, background .2s; }
 .compose button:hover:not(:disabled) { background: #ff6a3a; }
+.restart { border: 0; padding: 0; background: transparent; color: var(--orange); font: inherit; text-decoration: underline; cursor: pointer; }
+.restart:disabled { opacity: .5; cursor: default; }
 @keyframes pulse { 50% { opacity: .35; } }
 @media (max-width: 767px) {
   .panel { right: 12px; width: calc(100vw - 24px); bottom: calc(128px + env(safe-area-inset-bottom, 0px)); max-height: calc(100dvh - 144px - env(safe-area-inset-bottom, 0px)); }

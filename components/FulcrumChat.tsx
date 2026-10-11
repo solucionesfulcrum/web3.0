@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useRef, useState, type FormEvent } from "react";
 import styles from "./FulcrumChat.module.css";
+import { normalizeChatLead, type ChatLeadData } from "@/lib/chat-lead";
 
 type Message = { role: "user" | "assistant"; text: string; isError?: boolean };
 const historyLimit = 10;
@@ -14,6 +15,9 @@ export default function FulcrumChat() {
   const [docked, setDocked] = useState(false);
   const [draft, setDraft] = useState("");
   const [pending, setPending] = useState(false);
+  const [leadData, setLeadData] = useState<ChatLeadData>(() => normalizeChatLead(null));
+  const [leadCreated, setLeadCreated] = useState(false);
+  const leadSaveAttempted = useRef(false);
   const [messages, setMessages] = useState<Message[]>([{ role: "assistant", text: greeting }]);
   const launcher = useRef<HTMLButtonElement>(null);
   const closeButton = useRef<HTMLButtonElement>(null);
@@ -45,6 +49,15 @@ export default function FulcrumChat() {
     launcher.current?.focus({ preventScroll: true });
   }
 
+  function restart() {
+    if (request.current) return;
+    setMessages([{ role: "assistant", text: greeting }]);
+    setDraft("");
+    setLeadData(normalizeChatLead(null));
+    setLeadCreated(false);
+    leadSaveAttempted.current = false;
+  }
+
   async function send(text: string) {
     const message = text.trim();
     if (!message || request.current) return;
@@ -62,7 +75,7 @@ export default function FulcrumChat() {
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message, history }),
+        body: JSON.stringify({ message, history, leadData, leadCreated, leadSaveAttempted: leadSaveAttempted.current }),
         signal: controller.signal,
       });
       if (!response.ok) throw new Error("Chat request failed");
@@ -72,6 +85,44 @@ export default function FulcrumChat() {
       }
       const reply = data.reply;
       setMessages(current => [...current, { role: "assistant", text: reply }]);
+      // Preserve compatibility with text-only responses during deployment.
+      if ("leadData" in data) {
+        const nextLead = normalizeChatLead(data.leadData);
+        setLeadData(nextLead);
+        if (nextLead.readyToCreate && !leadCreated && !leadSaveAttempted.current) {
+          // One attempt per conversation also prevents duplicates after an ambiguous network failure.
+          leadSaveAttempted.current = true;
+          window.clearTimeout(timeout);
+          const saveTimeout = window.setTimeout(() => controller.abort(), 20000);
+          try {
+            const { readyToCreate, contactConsent, ...fields } = nextLead;
+            const saved = await fetch("/api/leads", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ ...fields, source: "chatbot", status: "NUEVO" }),
+              signal: controller.signal,
+            });
+            if (!saved.ok) throw new Error("Lead request failed");
+            const result: unknown = await saved.json();
+            if (!result || typeof result !== "object" || !("success" in result) || result.success !== true) {
+              throw new Error("Invalid lead response");
+            }
+            setLeadCreated(true);
+            setMessages(current => [...current, {
+              role: "assistant",
+              text: "Perfecto, ya registré tu solicitud. El equipo de FULCRUM podrá revisar tu requerimiento y contactarte.",
+            }]);
+          } catch {
+            setMessages(current => [...current, {
+              role: "assistant",
+              text: "No pude confirmar el registro de tu solicitud en este momento. Podemos seguir conversando; también puedes usar «Contactar al equipo» para comunicarte con nosotros.",
+              isError: true,
+            }]);
+          } finally {
+            window.clearTimeout(saveTimeout);
+          }
+        }
+      }
     } catch {
       if (!controller.signal.aborted || timedOut) {
         setMessages(current => [...current, { role: "assistant", text: errorMessage, isError: true }]);
@@ -129,7 +180,10 @@ export default function FulcrumChat() {
           }} />
         <button type="submit" disabled={pending || !draft.trim()} tabIndex={open ? 0 : -1} aria-label="Enviar mensaje">↑</button>
       </form>
-      <p className="advisor-footnote">Impulsemos tu próximo proyecto.</p>
+      <p className="advisor-footnote">Impulsemos tu próximo proyecto.{" "}
+        {messages.length > 1 && <button className={styles.restart} type="button" onClick={restart}
+          disabled={pending} tabIndex={open ? 0 : -1}>Nueva conversación</button>}
+      </p>
     </section>
   </div>;
 }

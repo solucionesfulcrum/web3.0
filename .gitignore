@@ -30,3 +30,10 @@ Thumbs.db
 # TypeScript
 *.tsbuildinfo
 next-env.d.ts
+/app/generated/prisma
+
+
+.agents/
+.claude/
+.windsurf/
+skills-lock.json
