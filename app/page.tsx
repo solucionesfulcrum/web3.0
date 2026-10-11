@@ -6,9 +6,10 @@ import AgentNetwork from "@/components/sections/AgentNetwork";
 import Engineering from "@/components/sections/Engineering";
 import Team from "@/components/sections/Team";
 import Contact from "@/components/sections/Contact";
+import FulcrumChat from "@/components/FulcrumChat";
 
 export default function Home() {
-  return <Experience>
+  return <><Experience>
     <Hero />
     <Capabilities />
     <BusinessSolutions />
@@ -16,5 +17,5 @@ export default function Home() {
     <Engineering />
     <Team />
     <Contact />
-  </Experience>;
+  </Experience><FulcrumChat /></>;
 }
