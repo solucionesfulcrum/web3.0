@@ -198,9 +198,45 @@ test("Meet pending or read failure preserves the confirmed booking", async () =>
   }
 });
 
-test("development guard and missing credentials cause no writes", async () => {
-  const production = harness({ env: { NODE_ENV: "production" } });
-  assert.equal((await production.book()).status, 404); assert.equal((await production.availability("2026-10-15")).status, 404);
-  const missing = harness({ env: { GOOGLE_REFRESH_TOKEN: "" } });
-  assert.equal((await missing.book()).status, 500); assert.equal(missing.calls.inserts.length, 0);
+test("production availability calls FreeBusy and booking inserts and persists with HTTPS OAuth configuration", async () => {
+  const h = harness({ env: { NODE_ENV: "production", GOOGLE_REDIRECT_URI: "https://www.fulcrum.com.pe/api/google/callback" },
+    busy: [{ start: "2026-10-15T09:00:00-05:00", end: "2026-10-15T09:30:00-05:00" }] });
+  const available = await h.availability("2026-10-15");
+  assert.equal(available.status, 200);
+  const data = await available.json();
+  assert.equal(data.success, true); assert.equal(data.timezone, "America/Lima");
+  assert.equal(data.slots.length, 17); assert.equal(data.slots[0].label, "09:30");
+  assert.equal(h.calls.busy.length, 1);
+  const booked = await h.book();
+  assert.equal(booked.status, 201); assert.equal((await booked.json()).meeting.meetUrl, "https://meet.google.com/test");
+  assert.equal(h.calls.busy.length, 2); assert.equal(h.calls.busy[1].requestBody.timeMin, valid.start);
+  assert.equal(h.calls.inserts.length, 1); assert.equal(h.calls.inserts[0].sendUpdates, "all");
+  assert.equal(h.calls.inserts[0].conferenceDataVersion, 1);
+  assert.equal(h.rows.length, 1); assert.equal(h.rows[0].endAt - h.rows[0].startAt, 1800000);
+});
+
+test("production retains validation, lead existence checks and conflict responses", async () => {
+  const env = { NODE_ENV: "production" };
+  const h = harness({ env });
+  assert.equal((await h.availability("invalid")).status, 400);
+  for (const body of [{ ...valid, email: "invalid" }, { ...valid, start: "2026-10-17T15:00:00-05:00" }, { ...valid, leadId: -1 }]) {
+    assert.equal((await h.book(body)).status, 400);
+  }
+  const missingLead = await h.book({ ...valid, leadId: 99 });
+  assert.equal(missingLead.status, 404);
+  assert.equal((await missingLead.json()).error, "El lead indicado no existe.");
+  assert.equal(h.calls.inserts.length, 0);
+  const occupied = harness({ env, busy: [{ start: valid.start, end: "2026-10-15T15:30:00-05:00" }] });
+  const conflict = await occupied.book();
+  assert.equal(conflict.status, 409); assert.equal((await conflict.json()).error, "Ese horario ya no está disponible");
+  assert.equal(occupied.calls.busy.length, 1); assert.equal(occupied.calls.inserts.length, 0);
+});
+
+test("missing credentials fail safely in development and production without writes", async () => {
+  for (const NODE_ENV of ["development", "production"]) {
+    const missing = harness({ env: { NODE_ENV, GOOGLE_REFRESH_TOKEN: "" } });
+    assert.equal((await missing.book()).status, 500);
+    assert.equal((await missing.availability("2026-10-15")).status, 500);
+    assert.equal(missing.calls.inserts.length, 0);
+  }
 });

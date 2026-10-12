@@ -20,8 +20,6 @@ function summary(value: string | null | undefined, limit: number) {
 }
 
 export async function POST(request: Request) {
-  if (process.env.NODE_ENV !== "development") return fail(404, "Ruta disponible solo en desarrollo.");
-
   let body: unknown;
   try { body = await request.json(); } catch { return fail(400, "Envía un cuerpo JSON válido."); }
 

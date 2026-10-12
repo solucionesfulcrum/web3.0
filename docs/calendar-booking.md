@@ -1,6 +1,7 @@
 # Reservas comerciales: validación local
 
-Estas rutas están habilitadas únicamente con `npm run dev`. El chatbot permite
+Las rutas de disponibilidad y reserva funcionan en desarrollo y producción, con
+las credenciales de Google y PostgreSQL configuradas en el servidor. El chatbot permite
 reservar después de recibir el ID del lead creado correctamente.
 
 ## Flujo en el chatbot

@@ -8,9 +8,6 @@ export const dynamic = "force-dynamic";
 const headers = { "Cache-Control": "no-store" };
 
 export async function GET(request: NextRequest) {
-  if (process.env.NODE_ENV !== "development") {
-    return NextResponse.json({ success: false, error: "Ruta disponible solo en desarrollo." }, { status: 404, headers });
-  }
   const dates = request.nextUrl.searchParams.getAll("date");
   const date = dates[0] ?? "";
   if (dates.length !== 1 || !isValidDate(date)) {
