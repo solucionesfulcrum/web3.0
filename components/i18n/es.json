@@ -168,5 +168,16 @@
   "Area": "Área",
   "Project:": "Proyecto:",
   "New project": "Nuevo proyecto",
-  "The interactive scene needs WebGL. You can still explore our work below.": "La escena interactiva necesita WebGL. Puedes seguir explorando nuestro trabajo más abajo."
+  "The interactive scene needs WebGL. You can still explore our work below.": "La escena interactiva necesita WebGL. Puedes seguir explorando nuestro trabajo más abajo.",
+  "REQUEST RECEIVED": "SOLICITUD RECIBIDA",
+  "Thank you": "Gracias",
+  "We have received your project information.": "Hemos recibido la información de tu proyecto.",
+  "We sent a confirmation to": "Te enviamos una confirmación a",
+  "Your request is saved. We could not confirm the email delivery; our team will review your project.": "Tu solicitud está guardada. No pudimos confirmar el envío del correo; nuestro equipo revisará tu proyecto.",
+  "CLOSE": "CERRAR",
+  "Our team will review your project.": "Nuestro equipo revisará tu proyecto.",
+  "SENDING REQUEST…": "ENVIANDO SOLICITUD…",
+  "SEND REQUEST": "ENVIAR SOLICITUD",
+  "We could not confirm receipt. Check your details and try again.": "No pudimos confirmar la recepción. Revisa tus datos e inténtalo nuevamente.",
+  "Your information will be sent to FULCRUM to review your project.": "Tu información se enviará a FULCRUM para revisar tu proyecto."
 }
