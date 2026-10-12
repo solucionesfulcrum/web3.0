@@ -9,6 +9,7 @@ datasource db {
 
 model Lead {
   id          Int      @id @default(autoincrement())
+  requestId   String?  @unique
   name        String?
   company     String?
   email       String?
@@ -20,4 +21,27 @@ model Lead {
   status      String    @default("NUEVO")
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+  meetings    Meeting[]
+}
+
+model Meeting {
+  id              Int      @id @default(autoincrement())
+  leadId          Int?
+  googleEventId   String   @unique
+  calendarHtmlUrl String?
+  meetUrl         String?
+  attendeeEmail   String
+  attendeeName    String?
+  title           String
+  description     String?
+  startAt         DateTime
+  endAt           DateTime
+  status          String   @default("SCHEDULED")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  lead Lead? @relation(fields: [leadId], references: [id], onDelete: SetNull)
+
+  @@index([leadId])
+  @@index([status, startAt, endAt])
 }

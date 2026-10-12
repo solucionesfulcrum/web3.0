@@ -41,6 +41,11 @@ export async function POST(request: Request) {
     }
 
     const input = body as Record<string, unknown>;
+    const requestId = input.requestId;
+    if (requestId != null && (typeof requestId !== "string" ||
+        !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(requestId))) {
+      return saveError(400);
+    }
     if (
       fields.some(
         (field) => input[field] != null && typeof input[field] !== "string",
@@ -61,13 +66,26 @@ export async function POST(request: Request) {
       status: cleanString(input.status) ?? "NUEVO",
     };
 
-    if (!data.email && !data.phone && !data.requirement) {
+    if (!data.requirement || (!data.email && !data.phone)) {
       return saveError(400);
     }
 
-    const lead = await prisma.lead.create({ data });
+    // The same conversation retries with the same key, even after a lost response.
+    // PostgreSQL's unique index and native upsert also cover concurrent requests.
+    const { source, status, ...contact } = data;
+    const updates = Object.fromEntries(Object.entries(contact).filter(([, value]) => value !== null));
+    const lead = typeof requestId === "string"
+      ? await prisma.lead.upsert({ where: { requestId }, create: { ...data, requestId }, update: updates })
+      : await prisma.lead.create({ data });
     return NextResponse.json({ success: true, lead }, { status: 201 });
-  } catch {
+  } catch (error) {
+    if (process.env.NODE_ENV === "development") {
+      // Never log the Prisma message, metadata or connection string: they may contain secrets.
+      const code = error && typeof error === "object" && "code" in error ? error.code : null;
+      console.error("[leads] Error de persistencia", {
+        code: typeof code === "string" && /^(?:P\d{4}|[0-9A-Z]{5}|ECONNREFUSED|ETIMEDOUT|ECONNRESET)$/.test(code) ? code : "UNKNOWN",
+      });
+    }
     return saveError(500);
   }
 }

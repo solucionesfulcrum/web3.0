@@ -17,7 +17,8 @@
 .panel header button { min-width: 36px; }
 .panel .status { display: flex; align-items: center; gap: 6px; font-size: 10px; letter-spacing: 0; }
 .status i { width: 5px; height: 5px; border-radius: 50%; background: var(--orange); box-shadow: 0 0 8px #ff4a1660; }
-.messages { max-height: none; scrollbar-color: #394047 transparent; }
+.panel .messages { max-height: none; min-height: 0; scrollbar-color: #394047 transparent; scroll-padding-block: 12px; }
+.bookingContainer { scroll-margin-block: 12px; }
 .messages p { white-space: pre-wrap; }
 .messages:focus-visible { outline: 1px solid var(--orange); outline-offset: -3px; }
 .typing { display: flex; align-items: center; gap: 10px; color: var(--secondary); font: 11px var(--mono); padding: 6px 0; }

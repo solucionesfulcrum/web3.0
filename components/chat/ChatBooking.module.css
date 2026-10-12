@@ -1,0 +1,30 @@
+.card { margin: 14px 0; padding: 16px; border: 1px solid #ff4a1645; border-radius: 14px; background: linear-gradient(145deg, #1c242c, #111820); color: #dbe1e6; min-width: 0; }
+.eyebrow { color: var(--orange); font: 9px var(--mono); letter-spacing: .08em; margin-bottom: 12px; }
+.minimized { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 10px 12px; background: #ffffff04; border-color: #ffffff18; }
+.minimized > span { flex: 1 1 140px; font-size: 12px; color: #aeb9c4; }
+.card h3 { font-size: 15px; font-weight: 600; line-height: 1.5; margin: 0 0 10px; }
+.card h4 { font-size: 13px; margin: 16px 0 10px; text-transform: capitalize; }
+.card p { margin: 8px 0; font-size: 13px; line-height: 1.6; overflow-wrap: anywhere; }
+.card button, .card a { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 10px 12px; border-radius: 8px; border: 1px solid #ffffff25; background: #ffffff04; color: #edf0f3; font: inherit; font-size: 12px; line-height: 1.4; cursor: pointer; text-decoration: none; transition: background .15s, border-color .15s; }
+.card button:hover:not(:disabled), .card a:hover { border-color: var(--orange); background: #ff4a1615; }
+.card button:focus-visible, .card a:focus-visible, .card input:focus-visible { outline: 2px solid var(--orange); outline-offset: 3px; }
+.card button:disabled { cursor: wait; opacity: .55; }
+.card .primary { background: var(--orange); border-color: var(--orange); color: white; font-weight: 600; }
+.card .primary:hover:not(:disabled) { background: #df3c10; }
+.actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+.dates { display: grid; grid-template-columns: 1fr; gap: 7px; margin: 14px 0; }
+.dates button { text-transform: capitalize; justify-content: flex-start; text-align: left; }
+.dates button[aria-pressed="true"] { background: #ff4a1622; border-color: var(--orange); }
+.slots { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.slots button { font-variant-numeric: tabular-nums; }
+.emailForm { display: grid; gap: 10px; margin-top: 14px; }
+.emailForm label { font-size: 12px; }
+.emailForm input { width: 100%; min-width: 0; box-sizing: border-box; background: #0b1016; border: 1px solid #ffffff30; border-radius: 8px; padding: 12px; color: #edf0f3; font-size: 16px; }
+.card .hint { color: #aeb9c4; font-size: 12px; }
+.card .error { color: #ffc5b4; }
+.card .notice { padding: 10px; border-radius: 8px; background: #ff4a1615; color: #ffd7ca; }
+.card .textButton { padding-left: 0; margin-top: 10px; border-color: transparent; background: transparent; color: #aeb9c4; text-decoration: underline; }
+.details { display: grid; gap: 6px; padding: 12px; margin: 12px 0; border-radius: 8px; background: #ffffff06; font-size: 13px; }
+.details strong { text-transform: capitalize; }
+@media (max-width: 360px) { .card { padding: 12px; } .slots { grid-template-columns: repeat(2, minmax(0, 1fr)); } .actions > * { width: 100%; } }
+@media (prefers-reduced-motion: reduce) { .card button, .card a { transition: none; } }

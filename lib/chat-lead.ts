@@ -42,6 +42,19 @@ export function normalizeChatLead(value: unknown): ChatLeadData {
 }
 
 const nullableString = { type: ["string", "null"] };
+
+// Extraction can be partial on later turns. Never erase a known contact because
+// the model only returned a name; explicit consent withdrawal still stops saving.
+export function mergeChatLead(previous: ChatLeadData, value: unknown): ChatLeadData {
+  const input = value && typeof value === "object" && !Array.isArray(value)
+    ? value as Record<string, unknown> : {};
+  const next = normalizeChatLead(input);
+  const fields = ["name", "company", "email", "phone", "service", "requirement", "aiSummary"] as const;
+  for (const field of fields) next[field] = next[field] ?? previous[field];
+  next.contactConsent = typeof input.contactConsent === "boolean" ? input.contactConsent : previous.contactConsent;
+  next.readyToCreate = next.contactConsent && !!next.requirement && !!(next.email || next.phone);
+  return next;
+}
 export const chatResponseSchema = {
   type: "object",
   additionalProperties: false,
